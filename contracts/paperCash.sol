@@ -37,7 +37,7 @@ contract paperCash {
 		constant
 		returns (bool)
 	{
-		return grants[_hashedKey] > 0 && !claimed[_hashedKey]
+		return (grants[_hashedKey] > 0 && !claimed[_hashedKey]);
 	}
 
 	event LogGrantCreated(bytes32 hashedKey, uint amount);

@@ -46,6 +46,12 @@ contract('paperCash', function(accounts) {
 		})
 	})
 
+	it("grant is valid", function() {
+		return cash.isGrantValid(hashedKey)
+		.then(function(isValid) {
+			assert.equal(isValid, true)
+		})
+	})
 
 	it("can't claim grant with shit value", function() {
 		return new Promise((resolve, reject) => {
