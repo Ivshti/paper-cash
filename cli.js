@@ -25,8 +25,8 @@ var gas = 64988
 var args = minimist(process.argv, { })
 var cmd = args._[2]
 
-if (['deploy', 'grant'].indexOf(cmd) == -1) {
-	endWithErr('usage: '+args._[1]+' [deploy,grant] --amount --')
+if (['deploy', 'grant', 'claim'].indexOf(cmd) == -1) {
+	endWithErr('usage: '+args._[1]+' [deploy,grant,claim] --amount --')
 }
 
 var cashAddr = ''
@@ -51,20 +51,35 @@ var addr = '0x'+keyStore.address.toLowerCase()
 
 prompt('keystore password: ', { method: 'hide' })
 .then(function(pwd) {
-	prepareForSig(keyStore, pwd)
+	prepare(keyStore, pwd)
 }).catch(endWithErr)
 
-
+//
+// Do the important work: deploy, grant or claim
+//
 var privateKey
-function prepareForSig(keyStore, pwd) {
+function prepare(keyStore, pwd) {
 	privateKey = keythereum.recover(pwd, keyStore)
 
 	console.log('private key decrypted successfully')
 
 	if (cmd === 'deploy') deploy()
-	else {
-		// TODO: check args
-		grant()
+	else if (cmd === 'grant') {
+		if (isNaN(args.amount)) endWithErr('--amount expected, in ether')
+
+		// Generate the keys
+		var key = crypto.randomBytes(32)
+		var d = new SHA3.SHA3Hash(256);
+		var hashedKey = '0x'+d.update(key).digest('hex');
+
+		console.log('using PRIVATE key: 0x'+key.toString('hex'));
+		console.log('using hashed key '+hashedKey);
+
+		giveGrant(hashedKey, args.amount, function(err) {
+			if (err) endWithErr(err)
+		})
+	} else if (cmd === 'claim') {
+
 	}
 }
 
@@ -99,25 +114,24 @@ function waitForTransactionReceipt(hash) {
 }
 
 var weiPerEth = Math.pow(10, 18)
-function submitPrice(oracle, done)
+function giveGrant(hashedKey, amount, cb)
 {
 	//Math.pow(10,18)/(usdPerEth * 100)
 
-	getEthPriceNow()
-	.then(function(data) {
-		//console.log(data);
-		var when = Object.keys(data)[0]
-		var prices = data[when]
-		var timestamp = new Date(when).getTime()
+	amount = parseFloat(amount)
+	if (amount < 0 || amount > 1) return cb(new Error('insane amount'))
 
-		console.log('ETH-USD: '+prices.ETH.USD)
+	var wei = amount * weiPerEth
 
-		var weiPerCent = Math.round(weiPerEth / (prices.ETH.USD * 100))
-
-		var payloadData = oracle.submitPrice.getData(timestamp, weiPerCent)
-		sendTx(payloadData, oracle.address, addr, gas, done)
-	}).catch(endWithErr)
+	var payloadData = contract.createGrant.getData(hashedKey, wei)
+	sendTx(payloadData, oracle.address, addr, gas, cb)
 }
+
+function claimGrant(key, cb)
+{
+	// TODO
+}
+
 
 
 ///
