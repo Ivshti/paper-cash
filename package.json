@@ -1,0 +1,38 @@
+{
+  "name": "paper-cash",
+  "version": "1.0.0",
+  "description": "ETH based paper cash",
+  "main": "index.js",
+  "scripts": {
+    "build": "./build.sh",
+    "test": "truffle test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ivshti/paper-cash.git"
+  },
+  "keywords": [
+    "usd",
+    "eth",
+    "crypto",
+    "cryptocurrency",
+    "oracle",
+    "ethereum"
+  ],
+  "author": "Ivo Georgiev <ivo@strem.io>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Ivshti/paper-cash/issues"
+  },
+  "homepage": "https://github.com/Ivshti/paper-cash#readme",
+  "dependencies": {
+    "ethereumjs-tx": "^1.3.3",
+    "get-eth-price": "^1.0.0",
+    "keythereum": "^1.0.2",
+    "minimist": "^1.2.0",
+    "password-prompt": "^1.0.2",
+    "solc": "^0.4.14",
+    "truffle": "^3.4.7",
+    "web3": "^0.20.0"
+  }
+}
