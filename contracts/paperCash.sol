@@ -11,9 +11,11 @@ contract paperCash {
 	{
 		require(grants[_hashedKey] == 0);
 		require(claimed[_hashedKey] == false);
-		
+
 		require(msg.value > 0);
 		grants[_hashedKey] = msg.value;
+
+		LogGrantCreated(_hashedKey, msg.value);
 	}
 
 	function claimGrant(bytes32 _key) 
@@ -23,9 +25,14 @@ contract paperCash {
 		require(!claimed[hashedKey]);
 		claimed[hashedKey] = true;
 
-		uint grant = grants[hashedKey];
-		require(grant > 0);
+		uint amount = grants[hashedKey];
+		require(amount > 0);
 
-		require(msg.sender.send(grant));
+		require(msg.sender.send(amount));
+
+		LogGrantClaimed(hashedKey, amount);
 	}
+
+	event LogGrantCreated(bytes32 hashedKey, uint amount);
+	event LogGrantClaimed(bytes32 hashedKey, uint amount);
 }
