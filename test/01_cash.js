@@ -14,6 +14,7 @@ console.log('using hashed key '+hashedKey);
 contract('paperCash', function(accounts) {
 	var accOne = web3.eth.accounts[0]
 	var accTwo = web3.eth.accounts[1]
+	var accThree = web3.eth.accounts[2]
 
 	var cash 
 	it("initialize contract", function() {
@@ -48,7 +49,7 @@ contract('paperCash', function(accounts) {
 
 	it("can't claim grant with shit value", function() {
 		return new Promise((resolve, reject) => {
-			cash.claimGrant(hashedKey, { from: accTwo })
+			cash.claimGrant(hashedKey, { from: accThree })
 			.then(function() { reject('cant be here: success not allowed') })
 			.catch(function(err) {
 				if (!err) return reject(new Error('Cant be here'))
@@ -67,7 +68,7 @@ contract('paperCash', function(accounts) {
 			var ev = res.logs[0]
 			if (!ev) throw 'no ev'
 
-			gasUsed += res.receipt.gasUsed
+			gasUsed += res.receipt.cumulativeGasUsed
 
 			assert.equal(ev.args.hashedKey, hashedKey)
 			assert.equal(ev.args.amount.toNumber(), amount)
@@ -81,7 +82,8 @@ contract('paperCash', function(accounts) {
 			//console.log(accTwoStart, bal.toNumber())
 			//console.log(bal.toNumber()-accTwoStart, parseInt(amount))
 
-			//console.log(bal.toNumber() + (gasUsed * 10000000000), accTwoStart + parseInt(amount))
+			// 16k wei difference? wtf?
+			console.log(bal.toNumber() + (gasUsed * 10000000000), accTwoStart + parseInt(amount))
 			//assert.equal(bal.toNumber() + (gasUsed * 10000000000), accTwoStart + parseInt(amount))
 
 		})
