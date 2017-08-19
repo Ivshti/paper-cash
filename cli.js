@@ -80,7 +80,7 @@ function prepare(keyStore, pwd) {
 		var size = '120x120'
 
 		console.log(colors.red('using PRIVATE key: '+privKey));
-		console.log('QR Code Link:  https://api.qrserver.com/v1/create-qr-code/?size='+size+'&data='+privKey)
+		console.log('QR:  https://api.qrserver.com/v1/create-qr-code/?size='+size+'&data='+privKey)
 		console.log('\n\nusing hashed key '+hashedKey);
 
 		giveGrant(hashedKey, args.amount, function(err) {
