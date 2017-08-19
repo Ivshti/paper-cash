@@ -64,6 +64,8 @@ var privateKey
 function prepare(keyStore, pwd) {
 	privateKey = keythereum.recover(pwd, keyStore)
 
+	if (!privateKey) endWithErr('wrong password')
+
 	console.log('private key decrypted successfully')
 
 	if (cmd === 'deploy') deploy()
@@ -74,9 +76,12 @@ function prepare(keyStore, pwd) {
 		var key = crypto.randomBytes(32)
 		var d = new SHA3.SHA3Hash(256);
 		var hashedKey = '0x'+d.update(key).digest('hex');
+		var privKey = '0x'+key.toString('hex')
+		var size = '120x120'
 
-		console.log(colors.red('using PRIVATE key: 0x'+key.toString('hex')));
-		console.log('using hashed key '+hashedKey);
+		console.log(colors.red('using PRIVATE key: '+privKey));
+		console.log('QR Code Link:  https://api.qrserver.com/v1/create-qr-code/?size='+size+'&data='+privKey)
+		console.log('\n\nusing hashed key '+hashedKey);
 
 		giveGrant(hashedKey, args.amount, function(err) {
 			if (err) endWithErr(err)
