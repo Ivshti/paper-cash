@@ -23,15 +23,15 @@ var gas = 64988
 // Preparation
 //
 var args = minimist(process.argv, { })
-var cmd = args._[2]
+var cmd = args._[3]
 
 if (['deploy', 'grant', 'claim'].indexOf(cmd) == -1) {
-	endWithErr('usage: '+args._[1]+' [deploy,grant,claim] --amount --')
+	endWithErr('usage: '+args._[1]+' [path to keystore] [deploy,grant,claim] --amount --')
 }
 
 var cashAddr = ''
 
-var cashAbi = JSON.parse(fs.readFileSync('./build-contract/paperCash-bundled_sol_paperCash.abi').toString())
+var cashAbi = JSON.parse(fs.readFileSync('./build-contract/paperCash-bundled.sol:paperCash.abi').toString())
 var contract = web3.eth.contract(cashAbi);
 
 
@@ -85,7 +85,7 @@ function prepare(keyStore, pwd) {
 
 function deploy() 
 {
-	var bcode = fs.readFileSync('./build-contract/paperCash-bundled_sol_paperCash.bin').toString()
+	var bcode = fs.readFileSync('./build-contract/paperCash-bundled.sol:paperCash.bin').toString()
 	var payloadData = contract.new.getData({ from: addr, data: '0x'+bcode })
 
 	var gasToDeploy = web3.eth.estimateGas({ data: payloadData }) + 20000
