@@ -21,9 +21,11 @@ contract('paperCash', function(accounts) {
 			cash = _cash
 		})
 	});
+	
+	var amount = web3.toWei(0.01, 'ether')
+	var accTwoStart
 
 	it("create grant", function() {
-		var amount = web3.toWei(0.01, 'ether')
 
 		return cash.createGrant(hashedKey, {
 			from: accOne,
@@ -35,6 +37,11 @@ contract('paperCash', function(accounts) {
 
 			assert.equal(ev.args.hashedKey, hashedKey)
 			assert.equal(ev.args.amount.toNumber(), amount)
+
+			return web3.eth.getBalance(accTwo)
+		})
+		.then(function(bal) {
+			accTwoStart = bal.toNumber()
 		})
 	})
 
@@ -45,7 +52,49 @@ contract('paperCash', function(accounts) {
 			.then(function() { reject('cant be here: success not allowed') })
 			.catch(function(err) {
 				if (!err) return reject(new Error('Cant be here'))
-					console.log(err.message)
+				assert.equal(err.message, 'VM Exception while processing transaction: invalid opcode')
+				resolve()
+			})
+		});
+	})
+
+	it("claim grant", function() {
+
+		var gasUsed = 0;
+
+		return cash.claimGrant('0x'+key.toString('hex'), { from: accTwo, gasPrice: web3.toHex(10000000000) })
+		.then(function(res) {
+			var ev = res.logs[0]
+			if (!ev) throw 'no ev'
+
+			gasUsed += res.receipt.gasUsed
+
+			assert.equal(ev.args.hashedKey, hashedKey)
+			assert.equal(ev.args.amount.toNumber(), amount)
+
+			return web3.eth.getBalance(accTwo)
+		})
+		.then(function(bal) {
+			// TODO: check if we have the moneyz
+			/// complex because of gas
+
+			//console.log(accTwoStart, bal.toNumber())
+			//console.log(bal.toNumber()-accTwoStart, parseInt(amount))
+
+			//console.log(bal.toNumber() + (gasUsed * 10000000000), accTwoStart + parseInt(amount))
+			//assert.equal(bal.toNumber() + (gasUsed * 10000000000), accTwoStart + parseInt(amount))
+
+		})
+
+
+	})
+
+	it("can't claim grant twice", function() {
+		return new Promise((resolve, reject) => {
+			cash.claimGrant('0x'+key.toString('hex'), { from: accTwo })
+			.then(function() { reject('cant be here: success not allowed') })
+			.catch(function(err) {
+				if (!err) return reject(new Error('Cant be here'))
 				assert.equal(err.message, 'VM Exception while processing transaction: invalid opcode')
 				resolve()
 			})
