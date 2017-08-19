@@ -33,6 +33,13 @@ contract paperCash {
 		LogGrantClaimed(hashedKey, amount);
 	}
 
+	function isGrantValid(bytes32 _hashedKey)
+		constant
+		returns (bool)
+	{
+		return grants[_hashedKey] > 0 && !claimed[_hashedKey]
+	}
+
 	event LogGrantCreated(bytes32 hashedKey, uint amount);
 	event LogGrantClaimed(bytes32 hashedKey, uint amount);
 }
