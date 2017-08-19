@@ -96,6 +96,14 @@ contract('paperCash', function(accounts) {
 
 	})
 
+
+	it("grant is no longer valid", function() {
+		return cash.isGrantValid(hashedKey)
+		.then(function(isValid) {
+			assert.equal(isValid, false)
+		})
+	})
+
 	it("can't claim grant twice", function() {
 		return new Promise((resolve, reject) => {
 			cash.claimGrant('0x'+key.toString('hex'), { from: accTwo })
