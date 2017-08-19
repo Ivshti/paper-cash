@@ -7,6 +7,9 @@ var Tx = require('ethereumjs-tx')
 var prompt = require('password-prompt')
 var keythereum = require('keythereum')
 var minimist = require('minimist')
+var crypto = require('crypto')
+var SHA3 = require('sha3')
+var colors = require('colors')
 
 //
 // Hardcodes
@@ -22,18 +25,18 @@ var gas = 64988
 //
 // Preparation
 //
-var args = minimist(process.argv, { })
+var args = minimist(process.argv, { string: ['privateKey'] })
 var cmd = args._[3]
 
 if (['deploy', 'grant', 'claim'].indexOf(cmd) == -1) {
 	endWithErr('usage: '+args._[1]+' [path to keystore] [deploy,grant,claim] --amount --')
 }
 
-var cashAddr = ''
+var cashAddr = '0x5a16f165d139796732e2d9bba86bd20c8349d12e'
 
 var cashAbi = JSON.parse(fs.readFileSync('./build-contract/paperCash-bundled.sol:paperCash.abi').toString())
 var contract = web3.eth.contract(cashAbi);
-
+var cash = contract.at(cashAddr);
 
 //
 // Decrypting keystore
@@ -72,14 +75,19 @@ function prepare(keyStore, pwd) {
 		var d = new SHA3.SHA3Hash(256);
 		var hashedKey = '0x'+d.update(key).digest('hex');
 
-		console.log('using PRIVATE key: 0x'+key.toString('hex'));
+		console.log(colors.red('using PRIVATE key: 0x'+key.toString('hex')));
 		console.log('using hashed key '+hashedKey);
 
 		giveGrant(hashedKey, args.amount, function(err) {
 			if (err) endWithErr(err)
 		})
 	} else if (cmd === 'claim') {
+		var privKey = args.privateKey
+		if (!privKey || privKey.indexOf('0x') !== 0) endWithErr('needs hex --privateKey')
 
+		claimGrant(privKey, function(err) {
+			if (err) endWithErr(err)
+		})
 	}
 }
 
@@ -90,7 +98,7 @@ function deploy()
 
 	var gasToDeploy = web3.eth.estimateGas({ data: payloadData }) + 20000
 
-	sendTx(payloadData, undefined, addr, gasToDeploy, function(err, res) {
+	sendTx(payloadData, undefined, addr, gasToDeploy, 0, function(err, res) {
 		if (err) endWithErr(err)
 		console.log('deployed, tx: ', res)
 		waitForTransactionReceipt(res)
@@ -123,13 +131,14 @@ function giveGrant(hashedKey, amount, cb)
 
 	var wei = amount * weiPerEth
 
-	var payloadData = contract.createGrant.getData(hashedKey, wei)
-	sendTx(payloadData, oracle.address, addr, gas, cb)
+	var payloadData = cash.createGrant.getData(hashedKey)
+	sendTx(payloadData, cash.address, addr, gas, wei, cb)
 }
 
-function claimGrant(key, cb)
+function claimGrant(privKey, cb)
 {
-	// TODO
+	var payloadData = cash.claimGrant.getData(privKey)
+	sendTx(payloadData, cash.address, addr, gas, 0, cb)
 }
 
 
@@ -138,7 +147,7 @@ function claimGrant(key, cb)
 /// HELPERS
 ///
 
-function sendTx(payload, to, from, gas, cb) {
+function sendTx(payload, to, from, gas, value, cb) {
 	var nonce = web3.eth.getTransactionCount(addr)
 
 	var rawTx = {
@@ -146,7 +155,7 @@ function sendTx(payload, to, from, gas, cb) {
 		gasPrice: web3.toHex(price),
 		gasLimit: web3.toHex(gas),
 		from: from,
-		value: web3.toHex(0),
+		value: web3.toHex(value),
 		data: payload,
 	};
 
