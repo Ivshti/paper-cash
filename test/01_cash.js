@@ -76,15 +76,14 @@ contract('paperCash', function(accounts) {
 			return web3.eth.getBalance(accTwo)
 		})
 		.then(function(bal) {
-			// TODO: check if we have the moneyz
+			// check if we have the moneyz
 			/// complex because of gas
 
 			//console.log(accTwoStart, bal.toNumber())
 			//console.log(bal.toNumber()-accTwoStart, parseInt(amount))
 
-			// 16k wei difference? wtf?
-			console.log(bal.toNumber() + (gasUsed * 10000000000), accTwoStart + parseInt(amount))
-			//assert.equal(bal.toNumber() + (gasUsed * 10000000000), accTwoStart + parseInt(amount))
+			//console.log(bal.toNumber() + (gasUsed * 10000000000), accTwoStart + parseInt(amount))
+			assert.equal(bal.toNumber() + (gasUsed * 10000000000), accTwoStart + parseInt(amount))
 
 		})
 
