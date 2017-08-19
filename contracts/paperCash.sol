@@ -14,7 +14,7 @@ contract paperCash {
 
 	function claimGrant(bytes32 _key) 
 	{
-		uint grant = grants[sha3(key)];
+		uint grant = grants[sha3(_key)];
 		require(grant > 0);
 		require(msg.sender.send(grant));
 	}
