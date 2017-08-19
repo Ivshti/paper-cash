@@ -1,0 +1,5 @@
+build-contracts
+node_modules
+build-contract
+build/contracts
+paperCash-bundled.sol
